@@ -1,0 +1,11 @@
+node_modules
+dist
+.git
+keys
+*.log
+.env*
+.idea
+.cache
+coverage
+bkup
+notes

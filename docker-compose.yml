@@ -1,0 +1,12 @@
+services:
+  ska-site-tui:
+    build: .
+    image: ghcr.io/${GITHUB_REPOSITORY:-skahero/ska-site-tui}:latest
+    container_name: ska-site-tui
+    restart: unless-stopped
+    ports:
+      - "${PORT:-2222}:2222"
+    volumes:
+      - ./data/keys:/app/.keys
+    environment:
+      - PORT=2222
