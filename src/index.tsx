@@ -24,9 +24,31 @@ import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
 import { MainContent } from "./components/MainContent";
 import { ThemeProvider } from "./context/ThemeContext";
-import { DialogProvider } from "./ui/dialog";
+import { DialogProvider, useDialog } from "./ui/dialog";
+import { ShortcutBar } from "./components/ShortcutBar";
+import { ThemeDialog } from "./ui/dialog-theme";
+import { useRenderer } from "@opentui/solid";
+import { onCleanup } from "solid-js";
 
 const PORT = Number(process.env.PORT ?? 2222);
+
+function KeyboardHandler() {
+  const dialog = useDialog();
+  const renderer = useRenderer();
+
+  const keyHandler = (key: { name: string; ctrl?: boolean }) => {
+    if (key.ctrl && key.name === "t") {
+      ThemeDialog.show(dialog);
+    }
+  };
+
+  renderer.keyInput.on("keypress", keyHandler);
+  onCleanup(() => {
+    renderer.keyInput.removeListener("keypress", keyHandler);
+  });
+
+  return null;
+}
 
 function AppContent({ name }: { name: string }) {
   const terminalDimensions = useTerminalDimensions();
@@ -58,6 +80,7 @@ function AppContent({ name }: { name: string }) {
         <Sidebar width={sidebarWidth} />
         <MainContent />
       </box>
+      <ShortcutBar />
     </box>
   );
 }
@@ -66,6 +89,7 @@ function App({ name }: { name: string }) {
   return (
     <ThemeProvider>
       <DialogProvider>
+        <KeyboardHandler />
         <AppContent name={name} />
       </DialogProvider>
     </ThemeProvider>
