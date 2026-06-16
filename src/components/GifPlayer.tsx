@@ -9,9 +9,6 @@ import {
 } from "@opentui/core";
 import { GifReader } from "omggif";
 
-// @ts-ignore
-import gifPath from "../assets/9f2ffeefda81a1841f40adb3f225958e.gif" with { type: "image/gif" };
-
 interface GifFrame {
   pixels: Uint8Array;
   delay: number;
@@ -126,7 +123,7 @@ class GifPlayerRenderable extends FrameBufferRenderable {
     super.onUpdate(deltaTime);
     if (!this.gifData || this.gifData.frames.length <= 1) return;
 
-    this.frameTimer += deltaTime;
+    this.frameTimer += deltaTime*5;
     const currentFrame = this.gifData.frames[this.currentFrameIndex];
     if (!currentFrame) return;
 
@@ -145,6 +142,7 @@ class GifPlayerRenderable extends FrameBufferRenderable {
 extend({ gif_player: GifPlayerRenderable });
 
 interface GifPlayerProps {
+  src: string;
   width?: number;
   maxHeight?: number;
   bgColor?: string;
@@ -157,9 +155,9 @@ export function GifPlayer(props: GifPlayerProps) {
 
   onMount(async () => {
     try {
-      const file = Bun.file(gifPath);
+      const file = Bun.file(props.src);
       if (!(await file.exists())) {
-        console.error("[GifPlayer] GIF not found:", gifPath);
+        console.error("[GifPlayer] GIF not found:", props.src);
         return;
       }
 

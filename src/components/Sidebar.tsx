@@ -1,6 +1,8 @@
 /** @jsxImportSource @opentui/solid */
 import { useTheme } from "../context/ThemeContext";
 import { GifPlayer } from "./GifPlayer";
+import { Image } from "./Image";
+
 
 export function Sidebar({ width }: { width: number }) {
   const { theme } = useTheme();
@@ -22,9 +24,10 @@ export function Sidebar({ width }: { width: number }) {
         padding: 0,
       }}
     >
-      <GifPlayer
+      {/* <GifPlayer
         width={width}
-      />
+      /> */}
+  
     </box>
   );
 }
