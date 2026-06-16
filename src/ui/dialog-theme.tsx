@@ -16,7 +16,7 @@ export function ThemeDialog() {
   let confirmed = false;
 
   // Focus management: Tab cycles between "mode" and "select"
-  const [focusTarget, setFocusTarget] = createSignal<FocusTarget>("mode");
+  const [focusTarget, setFocusTarget] = createSignal<FocusTarget>("select");
 
   useKeyboard((key) => {
     if (key.name === "tab") {
@@ -28,6 +28,9 @@ export function ThemeDialog() {
     if (focusTarget() === "mode") {
       if (key.name === "left" || key.name === "right") {
         setMode(mode() === "dark" ? "light" : "dark");
+      } else if (key.name === "enter" || key.name === "return") {
+        confirmed = true;
+        dialog.clear();
       }
     }
   });
@@ -99,41 +102,6 @@ export function ThemeDialog() {
 
       {/* Current theme name */}
 
-      {/* Dark/Light mode toggle */}
-      <box
-        flexDirection="column"
-        border={true}
-        borderStyle="rounded"
-        borderColor={isModeFocused() ? theme.accent : theme.backgroundPanel}
-        onMouseDown={() => setFocusTarget("mode")}
-      >
-        <box flexDirection="row" gap={2}>
-          <text fg={theme.textMuted}>当前: </text>
-          <text fg={theme.primary} attributes={TextAttributes.BOLD}>
-            {selected()}
-          </text>
-        </box>
-        <box flexDirection="row" gap={3}>
-          <text fg={theme.textMuted}>模式:</text>
-          <text
-            // fg={isDark() ? theme.accent : theme.textMuted}
-            fg={theme.secondary}
-            attributes={isDark() ? TextAttributes.BOLD : undefined}
-            onMouseUp={() => setMode("dark")}
-          >
-            {isDark() ? "● " : "○ "}深色
-          </text>
-          <text
-            fg={theme.secondary}
-            // fg={!isDark() ? theme.accent : theme.textMuted}
-            attributes={!isDark() ? TextAttributes.BOLD : undefined}
-            onMouseUp={() => setMode("light")}
-          >
-            {!isDark() ? "● " : "○ "}浅色
-          </text>
-        </box>
-      </box>
-
       {/* Theme select */}
       <box
         border={true}
@@ -167,6 +135,40 @@ export function ThemeDialog() {
           onChange={handleChange}
           onSelect={handleConfirm}
         />
+      </box>
+      {/* Dark/Light mode toggle */}
+      <box
+        flexDirection="column"
+        border={true}
+        borderStyle="rounded"
+        borderColor={isModeFocused() ? theme.accent : theme.backgroundPanel}
+        onMouseDown={() => setFocusTarget("mode")}
+      >
+        <box flexDirection="row" gap={2}>
+          <text fg={theme.textMuted}>当前: </text>
+          <text fg={theme.primary} attributes={TextAttributes.BOLD}>
+            {selected()}
+          </text>
+        </box>
+        <box flexDirection="row" gap={3}>
+          <text fg={theme.textMuted}>模式:</text>
+          <text
+            // fg={isDark() ? theme.accent : theme.textMuted}
+            fg={theme.secondary}
+            attributes={isDark() ? TextAttributes.BOLD : undefined}
+            onMouseUp={() => setMode("dark")}
+          >
+            {isDark() ? "● " : "○ "}深色
+          </text>
+          <text
+            fg={theme.secondary}
+            // fg={!isDark() ? theme.accent : theme.textMuted}
+            attributes={!isDark() ? TextAttributes.BOLD : undefined}
+            onMouseUp={() => setMode("light")}
+          >
+            {!isDark() ? "● " : "○ "}浅色
+          </text>
+        </box>
       </box>
 
       {/* Keyboard hints */}

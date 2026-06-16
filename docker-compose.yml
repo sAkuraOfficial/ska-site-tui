@@ -1,7 +1,7 @@
 services:
   ska-site-tui:
     build: .
-    image: ghcr.io/${GITHUB_REPOSITORY:-skahero/ska-site-tui}:latest
+    image: ghcr.io/sakuraofficial/ska-site-tui:latest
     container_name: ska-site-tui
     restart: unless-stopped
     ports:

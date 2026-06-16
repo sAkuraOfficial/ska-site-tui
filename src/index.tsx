@@ -35,6 +35,8 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { DialogProvider, useDialog } from "./ui/dialog";
 import { ShortcutBar } from "./components/ShortcutBar";
 import { ThemeDialog } from "./ui/dialog-theme";
+import { UserInfoDialog } from "./ui/dialog-user-info";
+import { SessionProvider } from "./context/SessionContext";
 import { useRenderer } from "@opentui/solid";
 import { onCleanup } from "solid-js";
 
@@ -47,6 +49,9 @@ function KeyboardHandler() {
   const keyHandler = (key: { name: string; ctrl?: boolean }) => {
     if (key.ctrl && key.name === "t") {
       ThemeDialog.show(dialog);
+    }
+    if (key.ctrl && key.name === "u") {
+      UserInfoDialog.show(dialog);
     }
   };
 
@@ -77,7 +82,7 @@ function AppContent({ name }: { name: string }) {
       }}
       title=" SKA-SITE://ROOT "
       titleAlignment="left"
-      bottomTitle="  Ctrl+T 主题   Q/Ctrl+C 退出  "
+      bottomTitle="  Ctrl+T 主题   Ctrl+U 用户信息   Q/Ctrl+C 退出  "
       bottomTitleAlignment="center"
     >
       {/* <Header name={name} /> */}
@@ -98,13 +103,15 @@ function AppContent({ name }: { name: string }) {
   );
 }
 
-function App({ name }: { name: string }) {
+function App({ name, sessionInfo }: { name: string; sessionInfo: import("./context/SessionContext").SessionInfo }) {
   return (
     <ThemeProvider>
-      <DialogProvider>
-        <KeyboardHandler />
-        <AppContent name={name} />
-      </DialogProvider>
+      <SessionProvider session={sessionInfo}>
+        <DialogProvider>
+          <KeyboardHandler />
+          <AppContent name={name} />
+        </DialogProvider>
+      </SessionProvider>
     </ThemeProvider>
   );
 }
@@ -114,7 +121,18 @@ const server = createServer({
   auth: { publicKey: "any" },
 }).serve((session) => {
   session.renderer.targetFps = 60;
-  render(() => <App name={session.identity.username} />, session.renderer);
+  const sessionInfo = {
+    username: session.identity.username,
+    method: session.identity.method,
+    fingerprint: session.identity.method === "publickey" ? session.identity.fingerprint : undefined,
+    publicKey: session.identity.method === "publickey" ? session.identity.publicKey : undefined,
+    remoteAddress: session.remoteAddress,
+    term: session.term,
+    cols: session.cols,
+    rows: session.rows,
+    hasPty: session.hasPty,
+  };
+  render(() => <App name={session.identity.username} sessionInfo={sessionInfo} />, session.renderer);
   session.renderer.keyInput.on("keypress", (key) => {
     if (key.name === "q" || (key.ctrl && key.name === "c")) session.end();
   });
