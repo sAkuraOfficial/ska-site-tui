@@ -32,6 +32,7 @@ interface FocusManagerValue {
   _isGroupActive: (groupId: GroupId) => boolean;
   /** 返回该组的焦点索引信号 accessor（响应式） */
   _getFocusedIndexSignal: (groupId: GroupId) => Accessor<number>;
+  _setFocusedIndex: (groupId: GroupId, index: number) => void;
 }
 
 // ── Context ────────────────────────────────────────────────────────────
@@ -40,9 +41,7 @@ const FocusManagerContext = createContext<FocusManagerValue>();
 
 // ── Provider ───────────────────────────────────────────────────────────
 
-export function FocusProvider(
-  props: ParentProps & { groups?: GroupId[] }
-) {
+export function FocusProvider(props: ParentProps & { groups?: GroupId[] }) {
   const renderer = useRenderer();
 
   // 有序的组 ID 列表
@@ -52,11 +51,14 @@ export function FocusProvider(
   const groupItems = new Map<GroupId, any[]>();
 
   // 焦点索引：groupId -> signal<number>（响应式！）
-  const groupFocusIndices = new Map<GroupId, { get: Accessor<number>; set: (n: number) => void }>();
+  const groupFocusIndices = new Map<
+    GroupId,
+    { get: Accessor<number>; set: (n: number) => void }
+  >();
 
   // 当前激活的组（响应式）
   const [activeGroup, setActiveGroup] = createSignal<GroupId>(
-    groupOrder[0] ?? ""
+    groupOrder[0] ?? "",
   );
 
   // 初始化预注册的组
@@ -189,7 +191,11 @@ export function FocusProvider(
 
   // ── 键盘处理（集中在此处）──
 
-  const keyHandler = (key: { name: string; ctrl?: boolean; shift?: boolean }) => {
+  const keyHandler = (key: {
+    name: string;
+    ctrl?: boolean;
+    shift?: boolean;
+  }) => {
     // Ctrl 组合键不处理焦点导航
     if (key.ctrl) return;
 
@@ -223,6 +229,7 @@ export function FocusProvider(
     _unregisterItem,
     _isGroupActive,
     _getFocusedIndexSignal,
+    _setFocusedIndex: setCurrentIndex,
   };
 
   return (
@@ -297,10 +304,15 @@ export function useFocusGroup(groupId: GroupId) {
   function focusedIndex(): number {
     return manager._getFocusedIndexSignal(groupId)();
   }
+  function setFocusedIndex(index: number) {
+    manager.activateGroup(groupId); // 激活当前组
+    manager._setFocusedIndex(groupId, index); // 将键盘焦点的指针强行掰到当前点击的位置
+  }
 
   return {
     registerItem,
     isActive,
     focusedIndex,
+    setFocusedIndex,
   };
 }
