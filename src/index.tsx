@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { createServer } from "@opentui/ssh";
 import { render, useTerminalDimensions } from "@opentui/solid";
 import { createStore } from "solid-js/store";
+import { FocusProvider } from "./context/FocusContext"; // 导入你刚才写的代码
 
 // Auto-restart helper for Bun watch mode on Windows since Bun does not watch files compiled by custom plugins
 if (
@@ -96,7 +97,7 @@ function AppContent({ name }: { name: string }) {
           gap: 0,
         }}
       >
-        {/* <Sidebar width={sidebarWidth} /> */}
+        <Sidebar width={sidebarWidth} />
         <MainContent />
       </box>
       {/* <ShortcutBar /> */}
@@ -104,13 +105,21 @@ function AppContent({ name }: { name: string }) {
   );
 }
 
-function App({ name, sessionInfo }: { name: string; sessionInfo: import("./context/SessionContext").SessionInfo }) {
+function App({
+  name,
+  sessionInfo,
+}: {
+  name: string;
+  sessionInfo: import("./context/SessionContext").SessionInfo;
+}) {
   return (
     <ThemeProvider>
       <SessionProvider session={sessionInfo}>
         <DialogProvider>
           <KeyboardHandler />
-          <AppContent name={name} />
+          <FocusProvider groups={["sidebar", "main"]}>
+            <AppContent name={name} />
+          </FocusProvider>
         </DialogProvider>
       </SessionProvider>
     </ThemeProvider>
@@ -125,19 +134,28 @@ const server = createServer({
   const [sessionStore, setSessionStore] = createStore({
     username: session.identity.username,
     method: session.identity.method,
-    fingerprint: session.identity.method === "publickey" ? session.identity.fingerprint : undefined,
-    publicKey: session.identity.method === "publickey" ? session.identity.publicKey : undefined,
+    fingerprint:
+      session.identity.method === "publickey"
+        ? session.identity.fingerprint
+        : undefined,
+    publicKey:
+      session.identity.method === "publickey"
+        ? session.identity.publicKey
+        : undefined,
     remoteAddress: session.remoteAddress,
     term: session.term,
     cols: session.cols,
     rows: session.rows,
     hasPty: session.hasPty,
   });
-  session.renderer.on("resize",(width, height)=>{
+  session.renderer.on("resize", (width, height) => {
     setSessionStore("cols", width);
     setSessionStore("rows", height);
-  })
-  render(() => <App name={session.identity.username} sessionInfo={sessionStore} />, session.renderer);
+  });
+  render(
+    () => <App name={session.identity.username} sessionInfo={sessionStore} />,
+    session.renderer,
+  );
   session.renderer.keyInput.on("keypress", (key) => {
     if (key.name === "q" || (key.ctrl && key.name === "c")) session.end();
   });

@@ -28,22 +28,6 @@ export function MainContent() {
         alignItems: "flex-start",
       }}
     >
-      <box
-        style={{
-          // backgroundColor: "#ff5555",
-          flexGrow: 1,
-          justifyContent: "flex-end",
-          alignItems: "center",
-          height: "100%",
-          paddingBottom: "10%",
-        }}
-      >
-        <GifPlayer
-          width={24}
-          src={gifSr2}
-          bgColor={theme.background.toString()}
-        />
-      </box>
       <scrollbox
         style={{
           flexGrow: 0,
@@ -93,29 +77,13 @@ export function MainContent() {
               </text>
             }
           >
-            {/* 这里用形参 data 拿到的就是 posts() 的安全解包值 */}
             {(data) => (
               <PostList posts={data().items ?? []} total={data().total ?? 0} />
             )}
           </Show>
         </Show>
       </scrollbox>
-      <box
-        style={{
-          // backgroundColor: "#ff5555",
-          flexGrow: 1,
-          justifyContent: "flex-end",
-          alignItems: "center",
-          height: "100%",
-          paddingBottom: "10%",
-        }}
-      >
-        <GifPlayer
-          width={24}
-          src={gifSr2}
-          bgColor={theme.background.toString()}
-        />
-      </box>
+    
     </box>
   );
 }

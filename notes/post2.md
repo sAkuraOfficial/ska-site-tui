@@ -3,11 +3,9 @@ import { For, createSignal } from "solid-js";
 import { TextAttributes } from "@opentui/core";
 import { useTheme } from "../context/ThemeContext";
 import type { ListedPostVo } from "../api/types";
-// 1. 导入你的焦点管理器 Hook
-import { useFocusGroup } from "../context/FocusContext"; 
-
+import { RenderableEvents } from "@opentui/core";
 interface PostListProps {
-  posts: ListedPostVo[]; 
+  posts: ListedPostVo[]; // 适配 OpenAPI 返回的项
   total: number;
 }
 
@@ -27,16 +25,15 @@ function formatDate(dateStr?: string): string {
 export function PostList(props: PostListProps) {
   const { theme } = useTheme();
 
-  // 2. 注册当前组件到 "main" 焦点组
-  const { registerItem, isActive, focusedIndex } = useFocusGroup("main");
-
   return (
     <box
       style={{
         flexDirection: "column",
-        alignItems: "stretch", 
+        alignItems: "stretch", //这里是强行撑满
+        // alignItems: "center",
         justifyContent: "flex-start",
         alignSelf: "center",
+
         padding: 0,
         margin: 0,
         flexGrow: 0,
@@ -52,6 +49,7 @@ export function PostList(props: PostListProps) {
         {" "}
         文章列表 (共 {props.total} 篇)
       </text>
+      {/* <text style={{ fg: theme.textMuted }}>{"─".repeat(50)}</text> */}
 
       {/* 文章条目 */}
       <box
@@ -62,27 +60,25 @@ export function PostList(props: PostListProps) {
         <For each={props.posts}>
           {(post, index) => {
             const title = post.spec?.title ?? "无标题";
-            const author = post.owner?.displayName || post.owner?.name || "匿名";
+            const author =
+              post.owner?.displayName || post.owner?.name || "匿名";
             const publishTime = post.spec?.publishTime;
             const isFirst = () => index() === 0;
             const isLast = () => index() === props.posts.length - 1;
-            
             const [isHover, setIsHover] = createSignal(false);
-
-            // 3. 核心派生状态：只有当 main 组被激活，且当前索引匹配时，才算真正聚焦
-            const isItemFocused = () => isActive() && focusedIndex() === index();
-
+            const [isFocused, setIsFocused] = createSignal(false);
             return (
               <box
                 focusable={true}
                 focusedBorderColor={theme.text}
-                // 4. 将节点的 ref 交给焦点管理器，同时保留你需要的物理 focus 行为
                 ref={(el) => {
                   if (!el) return;
-                  registerItem(el); // 全局管理器打卡注册
+                  el.on(RenderableEvents.FOCUSED, () => setIsFocused(true));
+                  el.on(RenderableEvents.BLURRED, () => setIsFocused(false));
                 }}
                 style={{
                   flexDirection: "column",
+                  // alignItems: "flex-start",
                   alignItems: "stretch",
                   justifyContent: "flex-start",
                   padding: 0,
@@ -116,28 +112,28 @@ export function PostList(props: PostListProps) {
                   }
                 }}
               >
-                {/* 5. 内部容器：使用全新响应式的 isItemFocused() 替代原来的局部状态 */}
+                {/* 之所以此处要套一个子box并且从父组件拿状态，是因为box的背景色必须包含边框 */}
+                {/* 为了不影响边框背景色，所以只能套一个没有边框的子组件，然后拿父组件的焦点、hover状态 */}
                 <box
                   style={{
-                    backgroundColor: isItemFocused()
-                      ? theme.backgroundElement // 有焦点
+                    backgroundColor: isFocused()
+                      ? theme.backgroundElement //有焦点
                       : isHover()
-                        ? theme.backgroundElement // Hover 状态
+                        ? theme.backgroundElement
                         : theme.background,
+                    // width: "100%",
                     flexDirection: "row",
                     paddingLeft: 1,
                     paddingRight: 1,
                   }}
                 >
-                  {/* 指示箭头 */}
                   <box
                     style={{
-                      opacity: isItemFocused() ? 1 : 0,
+                      opacity: isFocused() ? 1 : 0,
                     }}
                   >
                     <text>▶</text>
                   </box>
-                  
                   <box>
                     <box>
                       <text
@@ -147,6 +143,7 @@ export function PostList(props: PostListProps) {
                         }}
                       >
                         {" "}
+                        {/* {index()} */}
                         {title}
                       </text>
                     </box>
