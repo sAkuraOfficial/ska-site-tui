@@ -17,7 +17,7 @@ export function Sidebar({ width }: { width: number }) {
   return (
     <box
       style={{
-        flexGrow: 0,
+        flexGrow: 1,
         flexShrink: 0,
         flexBasis: width,
         minWidth: 32,
@@ -36,7 +36,7 @@ export function Sidebar({ width }: { width: number }) {
         width={width + 16}
         bgColor={theme.background.toString()}
       /> */}
-      <box ref={registerItem}>
+      {/* <box ref={registerItem}>
         <Button focused={isActive() && focusedIndex() === 0}>提交</Button>
       </box>
 
@@ -46,22 +46,22 @@ export function Sidebar({ width }: { width: number }) {
 
       <box ref={registerItem}>
         <Button focused={isActive() && focusedIndex() === 2}>取消</Button>
-      </box>
+      </box> */}
 
       {/* 如果某个按钮不可点击(disabled)，不需要写 ref，它就会被键盘导航完美跳过 */}
-      <box>
+      {/* <box>
         <Button disabled>不可点击</Button>
-      </box>
+      </box> */}
 
       {/* 复杂的嵌套布局也完全没问题，依然按顺序自动识别 */}
-      <box flexDirection="row" gap={2}>
+      {/* <box flexDirection="row" gap={2}>
         <box ref={registerItem}>
           <Button focused={isActive() && focusedIndex() === 3}>返回</Button>
         </box>
         <box ref={registerItem}>
           <Button focused={isActive() && focusedIndex() === 4}>确认</Button>
         </box>
-      </box>
+      </box> */}
     </box>
   );
 }

@@ -8,6 +8,7 @@ import { useFocusGroup } from "../context/FocusContext";
 interface PostListProps {
   posts: ListedPostVo[];
   total: number;
+  enterPost: (post: ListedPostVo) => void; 
 }
 
 function formatDate(dateStr?: string): string {
@@ -25,10 +26,13 @@ function formatDate(dateStr?: string): string {
 
 export function PostList(props: PostListProps) {
   const { theme } = useTheme();
+  const { registerItem, isActive, focusedIndex, setFocusedIndex } = useFocusGroup("main");
 
-  // 👇 解构出 setFocusedIndex
-  const { registerItem, isActive, focusedIndex, setFocusedIndex } =
-    useFocusGroup("main");
+  // 处理双击文章的逻辑
+  const handlePostDoubleClick = (post: ListedPostVo) => {
+    // 在这里写你双击想要执行的逻辑，比如打开文章
+    props.enterPost(post);
+  };
 
   return (
     <box
@@ -51,16 +55,17 @@ export function PostList(props: PostListProps) {
         <For each={props.posts}>
           {(post, index) => {
             const title = post.spec?.title ?? "无标题";
-            const author =
-              post.owner?.displayName || post.owner?.name || "匿名";
+            const author = post.owner?.displayName || post.owner?.name || "匿名";
             const publishTime = post.spec?.publishTime;
             const isFirst = () => index() === 0;
             const isLast = () => index() === props.posts.length - 1;
 
             const [isHover, setIsHover] = createSignal(false);
+            const isItemFocused = () => isActive() && focusedIndex() === index();
 
-            const isItemFocused = () =>
-              isActive() && focusedIndex() === index();
+            // 👇 核心：利用闭包为每个独立的列表项记录上一次点击的时间
+            let lastClickTime = 0;
+            const DOUBLE_CLICK_THRESHOLD = 300; // 双击间隔阈值（毫秒）
 
             return (
               <box
@@ -104,6 +109,21 @@ export function PostList(props: PostListProps) {
                       break;
                     case "out":
                       setIsHover(false);
+                      break;
+                    
+                    // 👇 监听鼠标按下事件
+                    case "down":
+                      // e.button === 0 通常代表鼠标左键
+                      if (e.button === 0) {
+                        const now = Date.now();
+                        if (now - lastClickTime < DOUBLE_CLICK_THRESHOLD) {
+                          // 🎉 成功触发双击
+                          handlePostDoubleClick(post);
+                          lastClickTime = 0; // 成功后重置，避免连续快速点击 3 下触发 2 次双击
+                        } else {
+                          lastClickTime = now;
+                        }
+                      }
                       break;
                   }
                 }}

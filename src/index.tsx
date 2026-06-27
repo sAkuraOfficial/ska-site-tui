@@ -79,8 +79,8 @@ function AppContent({ name }: { name: string }) {
         height: "100%",
         flexDirection: "column",
         alignItems: "stretch",
-        border: ["top", "left", "right", "bottom"],
-        borderStyle: "heavy",
+        // border: ["top", "left", "right", "bottom"],
+        // borderStyle: "heavy",
       }}
       title=" SKA-SITE://ROOT "
       titleAlignment="left"
@@ -97,8 +97,9 @@ function AppContent({ name }: { name: string }) {
           gap: 0,
         }}
       >
-        <Sidebar width={sidebarWidth} />
+        {/* <Sidebar width={sidebarWidth} /> */}
         <MainContent />
+        {/* <Sidebar width={sidebarWidth} /> */}
       </box>
       {/* <ShortcutBar /> */}
     </box>
