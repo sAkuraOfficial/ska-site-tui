@@ -15,7 +15,6 @@ import PostDetail from "./PostDetail";
 export function MainContent() {
   const { theme } = useTheme();
 
-  // 2. 创建 Solid 数据资源，默认查询第 1 页，加载 20 条（可根据你的 TUI 容器高度调整）
   const [posts] = createResource(async () => {
     return await queryPosts({ page: 1, size: undefined });
   });
@@ -23,8 +22,7 @@ export function MainContent() {
   const [showPost, setShowPost] = createSignal<ListedPostVo | null>(null);
 
   const handlePostClick = (post: ListedPostVo) => {
-    // 在这里处理点击文章的逻辑，比如打开文章详情页
-    console.log("点击了文章:", post.spec?.title);
+    // console.log("点击了文章:", post.spec?.title);
     setShowPost(post);
   };
 

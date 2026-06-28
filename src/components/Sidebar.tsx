@@ -31,11 +31,11 @@ export function Sidebar({ width }: { width: number }) {
         padding: 0,
       }}
     >
-      {/* <GifPlayer
+      <GifPlayer
         src={gifSrc}
         width={width + 16}
         bgColor={theme.background.toString()}
-      /> */}
+      />
       {/* <box ref={registerItem}>
         <Button focused={isActive() && focusedIndex() === 0}>提交</Button>
       </box>

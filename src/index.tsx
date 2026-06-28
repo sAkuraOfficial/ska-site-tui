@@ -4,6 +4,8 @@ import { createServer } from "@opentui/ssh";
 import { render, useTerminalDimensions } from "@opentui/solid";
 import { createStore } from "solid-js/store";
 import { FocusProvider } from "./context/FocusContext"; // 导入你刚才写的代码
+import { getTreeSitterClient, addDefaultParsers } from "@opentui/core";
+import parsers from "./theme/parsers-config";
 
 // Auto-restart helper for Bun watch mode on Windows since Bun does not watch files compiled by custom plugins
 if (
@@ -99,7 +101,7 @@ function AppContent({ name }: { name: string }) {
       >
         {/* <Sidebar width={sidebarWidth} /> */}
         <MainContent />
-        {/* <Sidebar width={sidebarWidth} /> */}
+        <Sidebar width={sidebarWidth} />
       </box>
       {/* <ShortcutBar /> */}
     </box>
@@ -125,6 +127,12 @@ function App({
       </SessionProvider>
     </ThemeProvider>
   );
+}
+
+// 遍历 parsers-config 中的所有解析器并注册
+const treeSitterClient = getTreeSitterClient();
+for (const parser of parsers.parsers) {
+  treeSitterClient.addFiletypeParser(parser);
 }
 
 const server = createServer({
