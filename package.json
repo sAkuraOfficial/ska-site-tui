@@ -16,9 +16,11 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@ai-sdk/openai-compatible": "^3.0.1",
     "@opentui/core": "^0.4.1",
     "@opentui/solid": "^0.4.1",
     "@opentui/ssh": "^0.4.1",
+    "ai": "^7.0.4",
     "drizzle-orm": "1.0.0-rc.3",
     "jimp": "^1.6.1",
     "ky": "^2.0.2",

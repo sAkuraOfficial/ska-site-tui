@@ -8,8 +8,7 @@ import {
 import { writeFileSync } from "node:fs";
 import {
   streamChat,
-  toApiMessages,
-  getChatModelId,
+  getAIModel,
   type StreamCallbacks,
 } from "../api/chat";
 
@@ -92,10 +91,10 @@ export function ChatProvider(props: ParentProps) {
   function sendMessage(text: string) {
     if (!text.trim() || isStreaming()) return;
 
-    const modelId = getChatModelId();
-    if (!modelId) {
-      console.error("[chat] CHAT_MODEL_ID is not configured");
-      setMarkdownContent((prev) => prev + "\n\n> ❌ CHAT_MODEL_ID 未配置\n\n");
+    const model = getAIModel();
+    if (!model) {
+      console.error("[chat] AI_MODEL is not configured");
+      setMarkdownContent((prev) => prev + "\n\n> ❌ AI_MODEL 未配置\n\n");
       return;
     }
 
@@ -123,12 +122,16 @@ export function ChatProvider(props: ParentProps) {
     // 独立的流式字符串缓冲区 —— 不碰 messages 数组
     let currentAssistantText = "";
 
-    // 构建 API 历史（不含占位的 assistant）
+    // 构建 API 历史（不含占位的 assistant），注入上下文到第一条用户消息
     const history = messages()
       .filter((_, i) => i !== streamingIndex)
-      .map((m) => ({ role: m.role, content: m.content }));
+      .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
 
-    const apiMessages = toApiMessages(history, injectContext);
+    if (injectContext && history.length > 0 && history[0]!.role === "user") {
+      const first = history[0]!;
+      history[0] = { role: first.role, content: `${injectContext}\n\n---\n\n${first.content}` };
+    }
+
     abortController = new AbortController();
 
     const callbacks: StreamCallbacks = {
@@ -180,7 +183,7 @@ export function ChatProvider(props: ParentProps) {
       },
     };
 
-    streamChat(modelId, apiMessages, callbacks, abortController.signal);
+    streamChat(history, callbacks, abortController.signal);
   }
 
   function abort() {
