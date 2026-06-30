@@ -13,6 +13,8 @@ if (
   process.execArgv.includes("--hot")
 ) {
   const entryFile = resolve(import.meta.dir, "index.tsx");
+  let restartTimer: NodeJS.Timeout | null = null;
+  
   watch(import.meta.dir, { recursive: true }, (eventType, filename) => {
     if (!filename) return;
     const fullPath = resolve(import.meta.dir, filename);
@@ -24,12 +26,20 @@ if (
     )
       return;
 
-    try {
-      const now = new Date();
-      utimesSync(entryFile, now, now);
-    } catch {
-      // Ignore transient errors
+    // Debounce: clear existing timer and set a new one
+    if (restartTimer) {
+      clearTimeout(restartTimer);
     }
+    
+    restartTimer = setTimeout(() => {
+      try {
+        const now = new Date();
+        utimesSync(entryFile, now, now);
+      } catch {
+        // Ignore transient errors
+      }
+      restartTimer = null;
+    }, 1000); // 1 second delay
   });
 }
 import { Header } from "./components/Header";

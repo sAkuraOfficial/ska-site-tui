@@ -1,8 +1,14 @@
 /** @jsxImportSource @opentui/solid */
 import { useTheme } from "../context/ThemeContext";
 import { useChat } from "../context/ChatContext";
-import { SyntaxStyle, parseColor } from "@opentui/core";
+import {
+  SyntaxStyle,
+  createMarkdownCodeBlockRenderer,
+  parseColor,
+} from "@opentui/core";
 import { createSignal, createEffect } from "solid-js";
+import { useRenderer } from "@opentui/solid";
+import { createToolStatusRenderer } from "../ui/tool-status";
 
 const syntaxStyle = SyntaxStyle.fromStyles({
   keyword: { fg: parseColor("#FF7B72"), bold: true },
@@ -50,6 +56,7 @@ export function AIChat() {
   const { markdownContent, isStreaming, sendMessage } = useChat();
   const [inputValue, setInputValue] = createSignal("");
   let scrollRef: any = null;
+  const renderer = useRenderer();
 
   createEffect(() => {
     markdownContent();
@@ -115,6 +122,12 @@ export function AIChat() {
           conceal={true}
           internalBlockMode="top-level"
           tableOptions={{ widthMode: "content" }}
+          // renderNode={createMarkdownCodeBlockRenderer({
+          //   taskflow: createToolStatusRenderer(renderer),
+          // })}
+          renderNode={createMarkdownCodeBlockRenderer({
+            taskflow: createToolStatusRenderer(renderer),
+          })}
         />
       </scrollbox>
 

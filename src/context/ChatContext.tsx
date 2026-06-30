@@ -107,6 +107,9 @@ export function ChatProvider(props: ParentProps) {
       };
       history.push(contextSwitchMsg, contextAckMsg);
     }
+    // 提取上下文，用于注入 system prompt
+    const activeContext = contextDirty ? currentContextContent : undefined;
+    
     contextDirty = false;
 
     abortController = new AbortController();
@@ -154,7 +157,7 @@ export function ChatProvider(props: ParentProps) {
       },
     };
 
-    streamChat(history, callbacks, abortController.signal);
+    streamChat(history, callbacks, abortController.signal, activeContext);
   }
 
   function abort() {
