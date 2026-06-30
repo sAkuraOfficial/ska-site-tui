@@ -13,19 +13,19 @@
     "@types/turndown": "^5.0.6"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@ai-sdk/openai-compatible": "^3.0.1",
-    "@opentui/core": "^0.4.1",
-    "@opentui/solid": "^0.4.1",
-    "@opentui/ssh": "^0.4.1",
-    "ai": "^7.0.4",
+    "@ai-sdk/openai-compatible": "^3.0.2",
+    "@opentui/core": "^0.4.2",
+    "@opentui/solid": "^0.4.2",
+    "@opentui/ssh": "^0.4.2",
+    "ai": "^7.0.8",
     "drizzle-orm": "1.0.0-rc.3",
     "jimp": "^1.6.1",
     "ky": "^2.0.2",
     "omggif": "^1.0.10",
-    "solid-js": "^1.9.0",
+    "solid-js": "^1.9.13",
     "turndown": "^7.2.4",
     "turndown-plugin-gfm": "^1.0.2"
   }

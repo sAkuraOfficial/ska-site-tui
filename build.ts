@@ -15,6 +15,7 @@ const result = await Bun.build({
   target: "bun",
   external: ["@opentui/core", "@opentui/core-*"],
   define: {},
+  minify:true,
 })
 
 if (!result.success) {
