@@ -6,6 +6,7 @@ import {
   type Accessor,
 } from "solid-js";
 import { streamChat, getAIModel, type StreamCallbacks } from "../api/chat";
+import { useSession } from "./SessionContext";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -25,12 +26,20 @@ interface ChatContextValue {
 const ChatContext = createContext<ChatContextValue>();
 
 export function ChatProvider(props: ParentProps) {
+  const session = useSession();
   const [messages, setMessages] = createSignal<ChatMessage[]>([]);
   const [markdownContent, setMarkdownContent] = createSignal("");
   const [isStreaming, setIsStreaming] = createSignal(false);
   //因为这里的数据还要提供给ui，所以不能使用普通变量。
   let abortController: AbortController | null = null;
   let streamingIndex = -1;
+
+  // 从 SSH session 派生用户 ID，用于 Hindsight 记忆隔离
+  const userId = (() => {
+    if (session.fingerprint) return session.fingerprint;
+    if (session.publicKey?.blob) return Buffer.from(session.publicKey.blob).toString("hex");
+    return session.username;
+  })();
 
   // ── 上下文管理 ──
   let currentContextKey = "";
@@ -157,7 +166,7 @@ export function ChatProvider(props: ParentProps) {
       },
     };
 
-    streamChat(history, callbacks, abortController.signal, activeContext);
+    streamChat(history, callbacks, abortController.signal, activeContext, userId);
   }
 
   function abort() {

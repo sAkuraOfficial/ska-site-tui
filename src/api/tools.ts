@@ -13,7 +13,7 @@ export const queryPostsTool = tool({
     "查询 ska 博客的文章列表，支持分页和筛选。当用户想要浏览文章列表、查看最新文章、或按标签/分类筛选文章时使用此工具。当用户需要查找一篇你不知道name（UUID）的文章的时候，你需要先使用此工具查询文章列表，获取文章的 name（UUID），然后再用 queryPostByName 查询详情。如果你已经知道用户阅读的文章的name（UUID），请直接使用 queryPostByName 工具查询文章详情，而不是使用此工具。",
   inputSchema: z.object({
     page: z.number().optional().default(1).describe("页码，从1开始"),
-    size: z.number().optional().default(10).describe("每页数量，默认50条,推荐传入50"),
+    size: z.number().optional().default(50).describe("每页数量，默认50条,推荐传入50"),
     labelSelector: z
       .array(z.string())
       .optional()

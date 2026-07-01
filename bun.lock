@@ -5,16 +5,18 @@
     "": {
       "name": "my-opentui-project",
       "dependencies": {
-        "@ai-sdk/openai-compatible": "^3.0.1",
-        "@opentui/core": "^0.4.1",
-        "@opentui/solid": "^0.4.1",
-        "@opentui/ssh": "^0.4.1",
-        "ai": "^7.0.4",
+        "@ai-sdk/openai-compatible": "^3.0.2",
+        "@opentui/core": "^0.4.2",
+        "@opentui/solid": "^0.4.2",
+        "@opentui/ssh": "^0.4.2",
+        "@vectorize-io/hindsight-ai-sdk": "^0.5.1",
+        "@vectorize-io/hindsight-client": "^0.8.4",
+        "ai": "^7.0.8",
         "drizzle-orm": "1.0.0-rc.3",
         "jimp": "^1.6.1",
         "ky": "^2.0.2",
         "omggif": "^1.0.10",
-        "solid-js": "^1.9.0",
+        "solid-js": "^1.9.13",
         "turndown": "^7.2.4",
         "turndown-plugin-gfm": "^1.0.2",
       },
@@ -24,12 +26,12 @@
         "@types/turndown": "^5.0.6",
       },
       "peerDependencies": {
-        "typescript": "^5",
+        "typescript": "^5.9.3",
       },
     },
   },
   "packages": {
-    "@ai-sdk/gateway": ["@ai-sdk/gateway@4.0.6", "https://registry.npmmirror.com/@ai-sdk/gateway/-/gateway-4.0.6.tgz", { "dependencies": { "@ai-sdk/provider": "4.0.1", "@ai-sdk/provider-utils": "5.0.2", "@vercel/oidc": "3.2.0" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-8GjssUxXeTd8tst2fYXNOFbtNNZFv3sG7aq7wKnQYrU2eB3JFR7np6o4F3Snp/fy/rJZSeH28LvjSWq5wkdL8Q=="],
+    "@ai-sdk/gateway": ["@ai-sdk/gateway@4.0.7", "https://registry.npmmirror.com/@ai-sdk/gateway/-/gateway-4.0.7.tgz", { "dependencies": { "@ai-sdk/provider": "4.0.1", "@ai-sdk/provider-utils": "5.0.2", "@vercel/oidc": "3.2.0" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-L0/CZwEL8AHO/Nxe5D0laNq9Q44mrKcth99tPgMNHqfsYbbNExwke4OYH18o/eLd3FLLBxs+03SuHP+Gcyp51Q=="],
 
     "@ai-sdk/openai-compatible": ["@ai-sdk/openai-compatible@3.0.2", "https://registry.npmmirror.com/@ai-sdk/openai-compatible/-/openai-compatible-3.0.2.tgz", { "dependencies": { "@ai-sdk/provider": "4.0.1", "@ai-sdk/provider-utils": "5.0.2" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-C6qUMe+qSMn7HVr1a0v5H9BXYKhsT5uO4Q2VYVHYdT7johzx+d1gYgFMhkRIoheBpCl5NPhljR4I4sHMWWfz6w=="],
 
@@ -199,11 +201,15 @@
 
     "@types/turndown": ["@types/turndown@5.0.6", "https://registry.npmmirror.com/@types/turndown/-/turndown-5.0.6.tgz", {}, "sha512-ru00MoyeeouE5BX4gRL+6m/BsDfbRayOskWqUvh7CLGW+UXxHQItqALa38kKnOiZPqJrtzJUgAC2+F0rL1S4Pg=="],
 
+    "@vectorize-io/hindsight-ai-sdk": ["@vectorize-io/hindsight-ai-sdk@0.5.1", "https://registry.npmmirror.com/@vectorize-io/hindsight-ai-sdk/-/hindsight-ai-sdk-0.5.1.tgz", { "peerDependencies": { "ai": "^6.0.0", "zod": "^3.0.0 || ^4.0.0" } }, "sha512-dde/+D26D2SOWPo0ln6nuzCxm7AHRgSd8oErtYu8SeRwL9retyupOKapDkIKGt+fXUw6zjkEesnasEw/tsBXfA=="],
+
+    "@vectorize-io/hindsight-client": ["@vectorize-io/hindsight-client@0.8.4", "https://registry.npmmirror.com/@vectorize-io/hindsight-client/-/hindsight-client-0.8.4.tgz", {}, "sha512-Tk5wRRhRVSZ0FuGcUKqBZIidw/6eS81oTIKV0H5gmzKSM2r2CdoijmOi+NaP0v51rnoxVi0nFEHQXivt0J2+OA=="],
+
     "@vercel/oidc": ["@vercel/oidc@3.2.0", "https://registry.npmmirror.com/@vercel/oidc/-/oidc-3.2.0.tgz", {}, "sha512-UycprH3T6n3jH0k44NHMa7pnFHGu/N05MjojYr+Mc6I7obkoLIJujSWwin1pCvdy/eOxrI/l3uDLQsmcrOb4ug=="],
 
     "@workflow/serde": ["@workflow/serde@4.1.0", "https://registry.npmmirror.com/@workflow/serde/-/serde-4.1.0.tgz", {}, "sha512-pav4F2BoirECWR7Nf1TKt+2eETcBj7jj4cBefQ8VXQCA6NPkaKeLfj/zMgi+3zYV5ZIBT4GuUiphsj0/b9hPQQ=="],
 
-    "ai": ["ai@7.0.8", "https://registry.npmmirror.com/ai/-/ai-7.0.8.tgz", { "dependencies": { "@ai-sdk/gateway": "4.0.6", "@ai-sdk/provider": "4.0.1", "@ai-sdk/provider-utils": "5.0.2" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-vTEKl6fDBZ2IxBXTRaZOajf9W2Ev57Ju8iKtUvqlmDk8Z9BrEP4c22SWJsg1RcWHSFmJMSBa/s5dlUBHUq3YwA=="],
+    "ai": ["ai@7.0.9", "https://registry.npmmirror.com/ai/-/ai-7.0.9.tgz", { "dependencies": { "@ai-sdk/gateway": "4.0.7", "@ai-sdk/provider": "4.0.1", "@ai-sdk/provider-utils": "5.0.2" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-yoxg/ousRxSX5Ko4+/8SH4vsc8BzoQqG7ywtS04L0kLH/+Ww71c+zqdTDXNVRQteDtKFGmt8+Q82ra/NbzjYqA=="],
 
     "ansi-regex": ["ansi-regex@6.2.2", "https://registry.npmmirror.com/ansi-regex/-/ansi-regex-6.2.2.tgz", {}, "sha512-Bq3SmSpyFHaWjPk8If9yc6svM8c56dB5BAtW4Qbw5jHTwwXXcTLoRMkpDJp6VL0XzlWaCHTXrkFURMYmD0sLqg=="],
 
