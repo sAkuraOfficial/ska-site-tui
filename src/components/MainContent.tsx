@@ -81,70 +81,35 @@ export function MainContent() {
         />
       </Show>
       <Show when={showPost() == null}>
-        <box zIndex={0}>
-          <scrollbox
-            style={{
-              flexGrow: 0,
-              flexShrink: 1,
-              height: "100%",
-              flexDirection: "row",
-              backgroundColor: theme.background,
-              // backgroundColor: "#b91007",
-
-              margin: 0,
-              padding: 1,
-              paddingTop: 0,
-              scrollY: true,
-            }}
-            zIndex={0}
-            // wrapperOptions={{
-            //   flexGrow: 0,
-            // }}
-            // rootOptions={{
-            //   flexGrow: 0,
-            // }}
-            contentOptions={{
-              flexGrow: 0,
-              minWidth: "0%", //这行关掉scrollbox内部的自动撑满行为
-            }}
-            verticalScrollbarOptions={{
-              trackOptions: {
-                foregroundColor: "transparent",
-                backgroundColor: "transparent",
-              },
-            }}
+        {/* 3. 优先处理错误状态 */}
+        <Show
+          when={!posts.error}
+          fallback={
+            <text style={{ fg: theme.error || "#ff5555" }}>
+              {" "}
+              加载失败: {posts.error()?.message || "未知网络错误"}
+            </text>
+          }
+        >
+          {/* 4. 处理正常加载与数据渲染 */}
+          <Show
+            when={!posts.loading && posts()}
+            fallback={
+              <text style={{ fg: theme.textMuted }}>
+                {" "}
+                正在从 Halo 读取文章列表中...
+              </text>
+            }
           >
-            {/* 3. 优先处理错误状态 */}
-            <Show
-              when={!posts.error}
-              fallback={
-                <text style={{ fg: theme.error || "#ff5555" }}>
-                  {" "}
-                  加载失败: {posts.error()?.message || "未知网络错误"}
-                </text>
-              }
-            >
-              {/* 4. 处理正常加载与数据渲染 */}
-              <Show
-                when={!posts.loading && posts()}
-                fallback={
-                  <text style={{ fg: theme.textMuted }}>
-                    {" "}
-                    正在从 Halo 读取文章列表中...
-                  </text>
-                }
-              >
-                {(data) => (
-                  <PostList
-                    posts={data().items ?? []}
-                    total={data().total ?? 0}
-                    enterPost={handlePostClick}
-                  />
-                )}
-              </Show>
-            </Show>
-          </scrollbox>
-        </box>
+            {(data) => (
+              <PostList
+                posts={data().items ?? []}
+                total={data().total ?? 0}
+                enterPost={handlePostClick}
+              />
+            )}
+          </Show>
+        </Show>
       </Show>
     </box>
   );
