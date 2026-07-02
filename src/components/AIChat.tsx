@@ -6,7 +6,8 @@ import {
   createMarkdownCodeBlockRenderer,
   parseColor,
 } from "@opentui/core";
-import { createSignal, createEffect } from "solid-js";
+import { createSignal, createEffect, onMount } from "solid-js";
+import { useFocusGroup } from "../context/FocusContext";
 import { useRenderer } from "@opentui/solid";
 import { createToolStatusRenderer } from "../ui/tool-status";
 import { generateSubtleSyntax } from "../theme";
@@ -55,9 +56,16 @@ const syntaxStyle = SyntaxStyle.fromStyles({
 export function AIChat() {
   const { theme } = useTheme();
   const { markdownContent, isStreaming, sendMessage } = useChat();
+  const { registerItem } = useFocusGroup("sidebar");
   const [inputValue, setInputValue] = createSignal("");
   let scrollRef: any = null;
+  let inputRef: any = null;
   const renderer = useRenderer();
+
+  // 将输入框注册到 sidebar 焦点组，Tab 切换时自动聚焦
+  onMount(() => {
+    if (inputRef) registerItem(inputRef);
+  });
 
   createEffect(() => {
     markdownContent();
@@ -142,6 +150,7 @@ export function AIChat() {
         }}
       >
         <input
+          ref={(el) => (inputRef = el)}
           value={inputValue()}
           onInput={setInputValue}
           onSubmit={handleSubmit as any}

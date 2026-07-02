@@ -39,7 +39,7 @@ export function PostList(props: PostListProps) {
   const { theme } = useTheme();
   const renderer = useRenderer();
   const dialog = useDialog();
-  const { focusedIndex, setFocusedIndex } = useFocusGroup("main");
+  const { focusedIndex, setFocusedIndex, isActive } = useFocusGroup("main");
 
   // ── scrollbox ref，用于 scrollChildIntoView 滚动到聚焦卡片 ──
   let scrollboxRef: any = null;
@@ -59,6 +59,14 @@ export function PostList(props: PostListProps) {
     ),
   );
 
+  // ── Tab 切换到 main 组时，聚焦当前卡片 ──
+  createEffect(() => {
+    const active = isActive(); // 追踪 activeGroup 信号
+    if (active && props.posts.length > 0) {
+      focusCard(focusedIndex());
+    }
+  });
+
   // ── 对指定索引的卡片聚焦 + 滚动到可视区域 ──
   function focusCard(index: number) {
     const slug = props.posts[index]?.metadata?.name;
@@ -73,6 +81,8 @@ export function PostList(props: PostListProps) {
     if (key.ctrl) return;
     // 弹窗打开时，不处理列表键盘事件
     if (dialog.stack.length > 0) return;
+    // 非 main 组激活时，不处理列表键盘事件
+    if (!isActive()) return;
     const count = props.posts.length;
     if (count === 0) return;
 

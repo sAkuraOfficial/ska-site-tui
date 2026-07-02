@@ -8,6 +8,7 @@ import {
   type Accessor,
 } from "solid-js";
 import { useRenderer } from "@opentui/solid";
+import { useDialog } from "../ui/dialog";
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -43,6 +44,7 @@ const FocusManagerContext = createContext<FocusManagerValue>();
 
 export function FocusProvider(props: ParentProps & { groups?: GroupId[] }) {
   const renderer = useRenderer();
+  const dialog = useDialog();
 
   // 有序的组 ID 列表
   const groupOrder: GroupId[] = props.groups ? [...props.groups] : [];
@@ -198,13 +200,12 @@ export function FocusProvider(props: ParentProps & { groups?: GroupId[] }) {
   }) => {
     // Ctrl 组合键不处理焦点导航
     if (key.ctrl) return;
+    // 弹窗打开时，不处理焦点导航
+    if (dialog.stack.length > 0) return;
 
+    // 仅处理 Tab 组切换；up/down/j/k 由各组件自行处理
     if (key.name === "tab") {
       nextGroup();
-    } else if (key.name === "down" || key.name === "j") {
-      focusNext();
-    } else if (key.name === "up" || key.name === "k") {
-      focusPrev();
     }
   };
 

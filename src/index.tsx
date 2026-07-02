@@ -55,12 +55,16 @@ import { SessionProvider } from "./context/SessionContext";
 import { PostProvider } from "./context/PostContext";
 import { useRenderer } from "@opentui/solid";
 import { onCleanup } from "solid-js";
+import { usePostContext } from "./context/PostContext";
+import { useSession } from "./context/SessionContext";
 
 const PORT = Number(process.env.PORT ?? 2222);
 
 function KeyboardHandler() {
   const dialog = useDialog();
   const renderer = useRenderer();
+  const { showPost, setShowPost } = usePostContext();
+  const session = useSession();
 
   const keyHandler = (key: { name: string; ctrl?: boolean }) => {
     if (key.ctrl && key.name === "t") {
@@ -68,6 +72,15 @@ function KeyboardHandler() {
     }
     if (key.ctrl && key.name === "u") {
       UserInfoDialog.show(dialog);
+    }
+    // ESC：弹窗已由 dialog 自行处理；全局范围内返回首页或断开连接
+    if (key.name === "escape") {
+      if (dialog.stack.length > 0) return;
+      if (showPost() != null) {
+        setShowPost(null);
+      } else {
+        session.endSession();
+      }
     }
   };
 
@@ -98,7 +111,7 @@ function AppContent({ name }: { name: string }) {
       }}
       title=" SKA-SITE://ROOT "
       titleAlignment="left"
-      bottomTitle="  Ctrl+T 主题   Ctrl+U 用户信息   Q/Ctrl+C 退出  "
+      bottomTitle="  Ctrl+T 主题   Ctrl+U 用户信息   ESC 返回/断开   Q/Ctrl+C 退出  "
       bottomTitleAlignment="center"
     >
       {/* <Header name={name} /> */}
@@ -112,7 +125,7 @@ function AppContent({ name }: { name: string }) {
         }}
       >
         {/* <Sidebar width={sidebarWidth} /> */}
-        
+
         <MainContent />
         {/* <Sidebar width={sidebarWidth} /> */}
         <Sidebar width="30%" />
@@ -138,7 +151,8 @@ function App({
           <PostProvider>
             <DialogProvider>
               <KeyboardHandler />
-              <FocusProvider groups={["sidebar", "main"]}>
+              {/* 这里数组会影响初始焦点顺序 */}
+              <FocusProvider groups={["main", "sidebar"]}>
                 <AppContent name={name} />
               </FocusProvider>
             </DialogProvider>
@@ -182,7 +196,13 @@ const server = createServer({
     setSessionStore("rows", height);
   });
   render(
-    () => <App name={session.identity.username} sessionInfo={sessionStore} endSession={() => session.end()} />,
+    () => (
+      <App
+        name={session.identity.username}
+        sessionInfo={sessionStore}
+        endSession={() => session.end()}
+      />
+    ),
     session.renderer,
   );
 

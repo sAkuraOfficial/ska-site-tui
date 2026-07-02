@@ -1,9 +1,10 @@
-import { createResource } from "solid-js";
+import { createResource, createEffect, onMount } from "solid-js";
 import type { ListedPostVo } from "../api/types";
 import { postToMarkdown } from "../lib/postToMarkdown";
 import { SyntaxStyle, parseColor } from "@opentui/core";
 import { useTheme } from "../context/ThemeContext";
 import { generateSyntax } from "../theme";
+import { useFocusGroup } from "../context/FocusContext";
 
 type PostDetailProps = {
   post: ListedPostVo;
@@ -13,6 +14,8 @@ type PostDetailProps = {
 export default function PostDetail(props: PostDetailProps) {
   const { post, handleClose } = props;
   const { theme } = useTheme();
+  const { isActive } = useFocusGroup("main");
+  let scrollRef: any = null;
 
   const [markdown] = createResource<string>(async () => {
     var sb = await postToMarkdown(post);
@@ -61,8 +64,24 @@ export default function PostDetail(props: PostDetailProps) {
   //   default: { fg: parseColor("#E6EDF3") },
   // });
 
+  // ── 进入 PostDetail 时立即聚焦滚动区域 ──
+  onMount(() => {
+    if (isActive() && scrollRef) {
+      scrollRef.focus();
+    }
+  });
+
+  // ── Tab 切换回 main 组时，重新聚焦滚动区域 ──
+  createEffect(() => {
+    const active = isActive();
+    if (active && scrollRef) {
+      scrollRef.focus();
+    }
+  });
+
   return (
     <scrollbox
+      ref={scrollRef}
       style={{
         flexGrow: 1,
         flexShrink: 1,
