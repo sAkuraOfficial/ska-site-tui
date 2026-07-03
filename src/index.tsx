@@ -2,6 +2,7 @@ import { watch, utimesSync } from "node:fs";
 import { resolve } from "node:path";
 import { createServer } from "@opentui/ssh";
 import { render, useTerminalDimensions } from "@opentui/solid";
+import { Show } from "solid-js";
 import { createStore } from "solid-js/store";
 import { FocusProvider } from "./context/FocusContext"; // 导入你刚才写的代码
 import { getTreeSitterClient, addDefaultParsers } from "@opentui/core";
@@ -128,7 +129,17 @@ function AppContent({ name }: { name: string }) {
 
         <MainContent />
         {/* <Sidebar width={sidebarWidth} /> */}
-        <Sidebar width="30%" />
+        <Show
+          when={
+            !!(
+              process.env.AI_BASE_URL &&
+              process.env.AI_API_KEY &&
+              process.env.AI_MODEL
+            )
+          }
+        >
+          <Sidebar width="30%" />
+        </Show>
       </box>
       {/* <ShortcutBar /> */}
     </box>
@@ -209,7 +220,32 @@ const server = createServer({
   session.onClose(() => {});
 });
 
-// await server.listen(PORT);
+// ── 启动诊断：打印环境变量与功能启用状态 ───────────────────────────
+const envStatus = {
+  HALO_BASE_URL: process.env.HALO_BASE_URL ?? "(未配置)",
+  HINDSIGHT_API_URL: process.env.HINDSIGHT_API_URL ?? "(未配置)",
+  AI_BASE_URL: process.env.AI_BASE_URL ?? "(未配置)",
+  AI_API_KEY: process.env.AI_API_KEY ? "****" : "(未配置)",
+  AI_MODEL: process.env.AI_MODEL ?? "(未配置)",
+};
+const aiChatEnabled = !!(
+  envStatus.AI_BASE_URL !== "(未配置)" &&
+  envStatus.AI_API_KEY !== "(未配置)" &&
+  envStatus.AI_MODEL !== "(未配置)"
+);
+const memoryEnabled = envStatus.HINDSIGHT_API_URL !== "(未配置)";
+
+console.log("\n── SKA-SITE 启动诊断 ──────────────────────");
+for (const [key, val] of Object.entries(envStatus)) {
+  console.log(`  ${key.padEnd(20)} ${val}`);
+}
+console.log("--------------------------------------------");
+console.log(`  AI Chat ........... ${aiChatEnabled ? "已启用" : "未启用"}`);
+console.log(`  记忆系统 .......... ${memoryEnabled ? "已启用" : "未启用"}`);
+console.log("────────────────────────────────────────────\n");
+
+// ──────────────────────────────────────────────────────────────────────
+
 try {
   await server.listen(PORT, "0.0.0.0");
 } catch (err: any) {
