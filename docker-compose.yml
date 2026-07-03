@@ -8,5 +8,6 @@ services:
       - "${PORT:-2222}:2222"
     volumes:
       - ./data/keys:/app/.keys
+      - ./.data:/app/.data
     environment:
       - PORT=2222
