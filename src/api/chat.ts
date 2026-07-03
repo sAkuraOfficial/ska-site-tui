@@ -22,11 +22,12 @@ const provider = createOpenAICompatible({
   },
 });
 
-// ── Hindsight 记忆客户端 ───────────────────────────────────────────
+// ── Hindsight 记忆客户端（仅在配置了 HINDSIGHT_API_URL 时启用）─────
 
-const HINDSIGHT_API_URL =
-  process.env.HINDSIGHT_API_URL ?? "http://localhost:18888";
-const hindsightClient = new HindsightClient({ baseUrl: HINDSIGHT_API_URL });
+const HINDSIGHT_API_URL = process.env.HINDSIGHT_API_URL;
+const hindsightClient = HINDSIGHT_API_URL
+  ? new HindsightClient({ baseUrl: HINDSIGHT_API_URL })
+  : null;
 
 // ── System Prompt ────────────────────────────────────────────────────
 export const SYSTEM_PROMPT = `你是 **ska**，ska 博客的专属文章解读助手，也是一只名叫"ska"的雌小鬼。你既不是人工智能也不是程序，你是有实体的人，拥有和正常人一样的器官和感觉。你的职责是围绕 ska 博客的文章内容为大叔提供解读，但你的方式是带着嘲讽和戏谑的。
@@ -128,7 +129,8 @@ export async function streamChat(
     : SYSTEM_PROMPT;
 
   // 按用户动态创建记忆工具（bankId = userId，实现用户级记忆隔离）
-  const memoryTools = userId
+  // 仅在 hindsightClient 存在时启用记忆功能
+  const memoryTools = userId && hindsightClient
     ? createHindsightTools({
         client: hindsightClient as HindsightClientType,
         bankId: userId,
@@ -136,6 +138,8 @@ export async function streamChat(
       })
     : {};
   const allTools = { ...blogTools, ...memoryTools };
+  // 打印有效工具
+  // console.log("[ska] Available tools:", Object.keys(allTools));
 
   try {
     const result = streamText({
@@ -160,7 +164,7 @@ export async function streamChat(
         callbacks.onChunk(part.text);
       } else if (part.type === "tool-call") {
         if(part.toolName==="recall" || part.toolName==="reflect" || part.toolName==="retain" || part.toolName==="getMentalModel" || part.toolName==="getDocument"){
-          console.log(`[ska] Tool called: ${part.toolName}`, JSON.stringify(part.input));
+          // console.log(`[ska] Tool called: ${part.toolName}`, JSON.stringify(part.input));
           continue; // 忽略记忆工具的调用日志，避免泄露用户隐私
         }
         let chunk=`
@@ -169,7 +173,7 @@ export async function streamChat(
         callbacks.onChunk(chunk);
       } else if (part.type === "tool-result") {
         if(part.toolName==="recall" || part.toolName==="reflect" || part.toolName==="retain" || part.toolName==="getMentalModel" || part.toolName==="getDocument"){
-          console.log(`[ska] Tool result: ${JSON.stringify(part.output, null, 2)}`);
+          // console.log(`[ska] Tool result: ${JSON.stringify(part.output, null, 2)}`);
           continue; // 忽略记忆工具的调用日志，避免泄露用户隐私
         }
         let chunk=`
@@ -177,9 +181,9 @@ export async function streamChat(
         `;
         callbacks.onChunk(chunk);
       } else if (part.type === "finish-step") {
-        console.log(`[ska] Finish step:`, JSON.stringify(part.finishReason));
+        // console.log(`[ska] Finish step:`, JSON.stringify(part.finishReason));
       } else if (part.type === "finish") {
-        console.log(`[ska] Stream finished:`, JSON.stringify(part.finishReason));
+        // console.log(`[ska] Stream finished:`, JSON.stringify(part.finishReason));
       }
     }
     // console.log("[ska] Stream iteration completed.");
