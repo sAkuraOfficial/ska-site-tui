@@ -7,6 +7,10 @@
 **本服务端为[https://blog.sakura-io.com/](https://blog.sakura-io.com/)提供服务**
 
 ```bash
+ssh -p 2222 blog.sakuraofficial.site
+```
+
+```bash
 ssh -p 2222 13.229.180.39
 ```
 
