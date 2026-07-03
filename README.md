@@ -6,6 +6,10 @@
 
 **本服务端为[https://blog.sakura-io.com/](https://blog.sakura-io.com/)提供服务**
 
+```bash
+ssh -p 2222 13.229.180.39
+```
+
 ![License](https://www.shieldcn.dev/github/license/sakuraofficial/ska-site-tui.svg?variant=ghost&size=sm) 
 
 ![Stars](https://www.shieldcn.dev/github/stars/sakuraofficial/ska-site-tui.svg?variant=secondary&size=sm) ![Commit](https://www.shieldcn.dev/github/last-commit/sakuraofficial/ska-site-tui.svg?variant=secondary&size=sm) ![CI](https://www.shieldcn.dev/github/ci/sakuraofficial/ska-site-tui.svg?variant=secondary&size=sm)
