@@ -6,15 +6,25 @@
 
 **本服务端为[https://blog.sakura-io.com/](https://blog.sakura-io.com/)提供服务**
 
+```bash
+ssh -p 2222 blog.sakuraofficial.site
+```
+
+```bash
+ssh -p 2222 13.229.180.39
+```
+
 ![License](https://www.shieldcn.dev/github/license/sakuraofficial/ska-site-tui.svg?variant=ghost&size=sm) 
 
 ![Stars](https://www.shieldcn.dev/github/stars/sakuraofficial/ska-site-tui.svg?variant=secondary&size=sm) ![Commit](https://www.shieldcn.dev/github/last-commit/sakuraofficial/ska-site-tui.svg?variant=secondary&size=sm) ![CI](https://www.shieldcn.dev/github/ci/sakuraofficial/ska-site-tui.svg?variant=secondary&size=sm)
 
 </div>
 
-<p align="center">
-  <video src="https://raw.githubusercontent.com/sAkuraOfficial/ska-site-tui/master/docs/demo.mp4" controls loop muted playsinline width="640"></video>
-</p>
+
+
+https://github.com/user-attachments/assets/2b6283c4-a1fd-42d4-b4c7-f276a1d8579b
+
+
 
 ## 快速开始
 

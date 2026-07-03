@@ -182,20 +182,23 @@ for (const parser of parsers.parsers) {
 
 const server = createServer({
   hostKey: { path: "./.keys/host_key" },
-  auth: { publicKey: "any" },
+  // auth: { publicKey: "any" },
+  auth: "open",
 }).serve((session) => {
   session.renderer.targetFps = 60;
   const [sessionStore, setSessionStore] = createStore({
     username: session.identity.username,
     method: session.identity.method,
     fingerprint:
-      session.identity.method === "publickey"
-        ? session.identity.fingerprint
-        : undefined,
+      // session.identity.method === "publickey"
+      //   ? session.identity.fingerprint
+      //   : undefined,
+      undefined,
     publicKey:
-      session.identity.method === "publickey"
-        ? session.identity.publicKey
-        : undefined,
+      // session.identity.method === "publickey"
+      //   ? session.identity.publicKey
+      //   : undefined,
+      undefined,
     remoteAddress: session.remoteAddress,
     term: session.term,
     cols: session.cols,
