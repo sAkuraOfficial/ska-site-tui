@@ -1,6 +1,7 @@
 import ky from "ky";
 import type * as types from "../types";
 import type { BlogAdapter, QueryPostsParams } from "./types";
+import { readCache, writeCache, readArticleCache, writeArticleCache } from "./cache";
 
 export interface RssAdapterConfig {
   rssUrl: string;
@@ -77,12 +78,105 @@ function extractName(guid: string, link: string): string {
   }
 }
 
+// ── RSS 解析 ──
+
+function parseRssItems(id: string, name: string, xml: string): types.PostVo[] {
+  const rawItems = extractItems(xml);
+  return rawItems.map((block) => {
+    const title = getTag(block, "title");
+    const link = getTag(block, "link");
+    const guid = getTag(block, "guid");
+    const pubDate = getTag(block, "pubDate");
+    const author = getTag(block, "author") || name;
+    const description = getTagRaw(block, "description");
+    const categories = getTags(block, "category");
+    const contentEncoded = getTagRaw(block, "content:encoded");
+
+    const postName = extractName(guid || link, link);
+    const cover = extractCoverFromHtml(description) ?? undefined;
+    const contentRaw = decodeEntities(contentEncoded) || description;
+
+    return {
+      metadata: {
+        name: postName,
+        creationTimestamp: pubDate ? new Date(pubDate).toISOString() : undefined,
+      },
+      spec: {
+        title,
+        slug: postName,
+        cover: cover ?? undefined,
+        deleted: false,
+        publish: true,
+        publishTime: pubDate ? new Date(pubDate).toISOString() : undefined,
+        pinned: false,
+        allowComment: true,
+        visible: "PUBLIC" as const,
+        priority: 0,
+        excerpt: { autoGenerate: false, raw: description },
+        categories,
+      },
+      status: {
+        phase: "PUBLISHED",
+        permalink: link,
+        commentsCount: 0,
+        excerpt: description,
+      },
+      content: {
+        raw: contentRaw,
+        content: contentRaw,
+      },
+      owner: {
+        metadata: { name: author },
+        displayName: author,
+      },
+      categories: categories.map((cat) => ({
+        metadata: { name: cat },
+        spec: { displayName: cat, slug: cat, priority: 0, hidden: false, hideFromList: false },
+      })),
+    } as types.PostVo;
+  });
+}
+
+/** 从网络拉取 RSS 并解析 */
+async function fetchAndParseRss(id: string, name: string, rssUrl: string): Promise<types.PostVo[]> {
+  const xml = await ky.get(rssUrl).text();
+  return parseRssItems(id, name, xml);
+}
+
+/** 后台异步刷新缓存（fire-and-forget） */
+function refreshRssCache(id: string, name: string, config: RssAdapterConfig) {
+  fetchAndParseRss(id, name, config.rssUrl)
+    .then((posts) => {
+      rssCache.set(id, posts);
+      lastFetchTime.set(id, Date.now());
+      writeCache(id, posts);
+    })
+    .catch((e) => {
+      console.error(`后台刷新 RSS 缓存失败 (${name}):`, e);
+    });
+}
+
 // ── 缓存 ──
 
 const rssCache = new Map<string, types.PostVo[]>();
 const articleHtmlCache = new Map<string, string>();
+const articleCacheLoaded = new Set<string>();
+const lastFetchTime = new Map<string, number>();
 
-async function fetchArticleHtml(url: string, selector?: string): Promise<string> {
+const CACHE_TTL_MS = 30 * 60 * 1000; // 1 分钟
+
+/** 从磁盘加载文章全文缓存到内存 */
+function ensureArticleCacheLoaded(sourceId: string) {
+  if (articleCacheLoaded.has(sourceId)) return;
+  articleCacheLoaded.add(sourceId);
+  const disk = readArticleCache(sourceId);
+  if (disk) {
+    disk.forEach((v, k) => articleHtmlCache.set(k, v));
+  }
+}
+
+async function fetchArticleHtml(url: string, sourceId: string, selector?: string): Promise<string> {
+  ensureArticleCacheLoaded(sourceId);
   const cached = articleHtmlCache.get(url);
   if (cached) return cached;
 
@@ -104,6 +198,10 @@ async function fetchArticleHtml(url: string, selector?: string): Promise<string>
   }
 
   articleHtmlCache.set(url, content);
+  // 异步写入磁盘（不阻塞返回）
+  const diskCache = readArticleCache(sourceId) ?? new Map<string, string>();
+  diskCache.set(url, content);
+  writeArticleCache(sourceId, diskCache);
   return content;
 }
 
@@ -114,81 +212,34 @@ export function createRssAdapter(id: string, name: string, config: RssAdapterCon
     type: "rss",
     async queryPosts(params: QueryPostsParams = {}): Promise<types.ListedPostVoList> {
       let posts = rssCache.get(id);
+
       if (!posts) {
-        let xml: string;
-        try {
-          xml = await ky.get(config.rssUrl).text();
-        } catch (e) {
-          console.error(`RSS 拉取失败 (${name}):`, e);
-          return { first: true, hasNext: false, hasPrevious: false, items: [], last: true, page: 1, size: 10, total: 0, totalPages: 0 };
+        // 1. 尝试磁盘缓存
+        const cached = readCache(id);
+        if (cached) {
+          posts = cached;
+          rssCache.set(id, posts);
+          lastFetchTime.set(id, Date.now() - CACHE_TTL_MS); // 磁盘缓存视为过期，触发后台刷新
+          refreshRssCache(id, name, config);
+        } else {
+          // 2. 无缓存，同步等待网络请求
+          try {
+            posts = await fetchAndParseRss(id, name, config.rssUrl);
+            rssCache.set(id, posts);
+            lastFetchTime.set(id, Date.now());
+            writeCache(id, posts);
+          } catch (e) {
+            console.error(`RSS 拉取失败 (${name}):`, e);
+            return { first: true, hasNext: false, hasPrevious: false, items: [], last: true, page: 1, size: 10, total: 0, totalPages: 0 };
+          }
         }
-        const rawItems = extractItems(xml);
-
-        posts = rawItems.map((block) => {
-          const title = getTag(block, "title");
-          const link = getTag(block, "link");
-          const guid = getTag(block, "guid");
-          const pubDate = getTag(block, "pubDate");
-          const author = getTag(block, "author") || name;
-          const description = getTagRaw(block, "description");
-          const categories = getTags(block, "category");
-          // haoyn231 使用 content:encoded
-          const contentEncoded = getTagRaw(block, "content:encoded");
-
-          const postName = extractName(guid || link, link);
-          const cover = extractCoverFromHtml(description) ?? undefined;
-
-          const contentRaw = decodeEntities(contentEncoded) || description;
-
-          const post: types.PostVo = {
-            metadata: {
-              name: postName,
-              creationTimestamp: pubDate ? new Date(pubDate).toISOString() : undefined,
-            },
-            spec: {
-              title,
-              slug: postName,
-              cover: cover ?? undefined,
-              deleted: false,
-              publish: true,
-              publishTime: pubDate ? new Date(pubDate).toISOString() : undefined,
-              pinned: false,
-              allowComment: true,
-              visible: "PUBLIC",
-              priority: 0,
-              excerpt: { autoGenerate: false, raw: description },
-              categories,
-            },
-            status: {
-              phase: "PUBLISHED",
-              permalink: link,
-              commentsCount: 0,
-              excerpt: description,
-            },
-            content: {
-              raw: contentRaw,
-              content: contentRaw,
-            },
-            owner: {
-              metadata: { name: author },
-              displayName: author,
-            },
-            categories: categories.map((cat) => ({
-              metadata: { name: cat },
-              spec: {
-                displayName: cat,
-                slug: cat,
-                priority: 0,
-                hidden: false,
-                hideFromList: false,
-              },
-            })),
-          };
-
-          return post;
-        });
-
-        rssCache.set(id, posts);
+      } else {
+        // 3. 内存有缓存，检查是否过期
+        const lastFetch = lastFetchTime.get(id) ?? 0;
+        if (Date.now() - lastFetch > CACHE_TTL_MS) {
+          console.log(`[RSS] 缓存过期 (${name}), 触发后台刷新`);
+          refreshRssCache(id, name, config);
+        }
       }
 
       const page = params.page ?? 1;
@@ -242,7 +293,7 @@ export function createRssAdapter(id: string, name: string, config: RssAdapterCon
       const link = post.status?.permalink;
       if (link) {
         if (config.fetchFullContent) {
-          const fullHtml = await fetchArticleHtml(link, config.articleSelector);
+          const fullHtml = await fetchArticleHtml(link, id, config.articleSelector);
           post.content = { raw: fullHtml, content: fullHtml };
         }
         // 不需要 fetchFullContent 的情况（如 haoyn231），content 已在 RSS 中填充
