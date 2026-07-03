@@ -64,8 +64,8 @@ export function Sidebar({ width }: { width: number | `${number}%` }) {
               fg: currentSource() === source.id ? "#5cb66b" : theme.text,
             }}
             onMouseDown={() => {
-              setCurrentSource(source.id);
               setShowPost(null);
+              setTimeout(() => setCurrentSource(source.id), 0);
             }}
           >
             {currentSource() === source.id ? `▸ ${source.name}` : source.name}

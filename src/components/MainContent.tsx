@@ -33,9 +33,11 @@ export function MainContent() {
   // 当 showPost 变化时，更新 AI 上下文
   createEffect(() => {
     const post = showPost();
+    const sourceId = currentSource();
     if (post) {
-      // 进入文章 → 异步获取文章 markdown 内容作为上下文
-      postToMarkdown(post, currentSource()).then((md) => {
+      postToMarkdown(post, sourceId).then((md) => {
+        // 切源或关文后，忽略过期的结果
+        if (currentSource() !== sourceId || showPost()?.metadata.name !== post.metadata.name) return;
         const title = post.spec?.title ?? "Untitled";
         chat.setContext(
           `post:${post.metadata.name}`,
