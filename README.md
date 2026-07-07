@@ -65,6 +65,13 @@ ssh -p 2222 user@your-server
 | AI         | Vercel AI SDK     |
 | 记忆系统   | Hindsight（可选） |
 
+## 支持二次开发
+
+本博客服务端由于使用了统一类型封装，因此不局限于HALO博客，可轻易剖离HALO博客的API，对接**各种博客后端**
+
+你可以使用AI工具进行后端接口替换。
+
+
 ## License
 
 [MIT](LICENSE)
