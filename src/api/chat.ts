@@ -17,9 +17,9 @@ const provider = createOpenAICompatible({
   name: "custom",
   apiKey: AI_API_KEY,
   baseURL: AI_BASE_URL,
-  transformRequestBody: (body) => {
-    return { ...body, enable_thinking: false }; // 关闭思考模式，减少不必要的延迟
-  },
+  // transformRequestBody: (body) => {
+  //   return { ...body, enable_thinking: false }; // 关闭思考模式，减少不必要的延迟
+  // },
 });
 
 // ── Hindsight 记忆客户端（仅在配置了 HINDSIGHT_API_URL 时启用）─────
@@ -130,13 +130,14 @@ export async function streamChat(
 
   // 按用户动态创建记忆工具（bankId = userId，实现用户级记忆隔离）
   // 仅在 hindsightClient 存在时启用记忆功能
-  const memoryTools = userId && hindsightClient
-    ? createHindsightTools({
-        client: hindsightClient as HindsightClientType,
-        bankId: userId,
-        retain: { async: true },
-      })
-    : {};
+  const memoryTools =
+    userId && hindsightClient
+      ? createHindsightTools({
+          client: hindsightClient as HindsightClientType,
+          bankId: userId,
+          retain: { async: true },
+        })
+      : {};
   const allTools = { ...blogTools, ...memoryTools };
   // 打印有效工具
   // console.log("[ska] Available tools:", Object.keys(allTools));

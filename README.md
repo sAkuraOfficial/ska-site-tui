@@ -68,3 +68,35 @@ ssh -p 2222 user@your-server
 ## License
 
 [MIT](LICENSE)
+
+
+## 附录
+
+### docker-compose：1panel+halo部署方法
+```yml
+services:
+  ska-site-tui:
+    build: .
+    image: ghcr.io/sakuraofficial/ska-site-tui:latest
+    container_name: ska-site-tui
+    restart: unless-stopped
+    ports:
+      - "${PORT:-2222}:2222" #这里是端口
+    volumes:
+      - ./data/keys:/app/.keys
+      - ./.data:/app/.data
+    environment:
+      - PORT=2222 #这里是端口
+      - HALO_BASE_URL=http://halo:8090 #这里是halo的地址，无需改动，是1panel部署halo的默认地址
+      - AI_BASE_URL=https://xxxx/v1   # 或任何 OpenAI 兼容 API
+      - AI_API_KEY=xxxxx
+      - AI_MODEL=xxx                   # 模型名
+      - OTUI_USE_CONSOLE=false
+      - SHOW_CONSOLE=false
+    networks:
+      - 1panel-network
+
+networks:
+  1panel-network:
+    external: true
+```
